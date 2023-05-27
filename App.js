@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, ActivityIndicator } from 'react-native';
 import { Dimensions } from 'react-native';
 import * as Location from 'expo-location';
-
+import { Fontisto } from '@expo/vector-icons'; 
 
 const { height: deviceHeight, width:deviceWidth } = Dimensions.get('window');
+const API_KEY = 'ff321907d5efa254723d69e647d2398f';
+
+const icons = {
+  "Clouds" : 'cloudy',
+  'Clear' : 'day-sunny',
+  'Rain' : 'rains',
+  'Wind' : 'wind',
+  'Snow' : 'snow',
+  'Thunderstorm' : 'lighting',
+  'Drizzle' : 'rain',
+  'Atmosphere' : 'cloudy-gusts',
+}
 
 export default function App() {
   const [days, setDays] = useState([]);
@@ -28,6 +39,11 @@ export default function App() {
   
       const location = await Location.reverseGeocodeAsync({latitude, longitude}, {useGoogleMaps: false});
       setCity(location[0].city);
+
+      const response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&units=metric`);
+      const json = await response.json();
+
+      setDays(json.list);
     } catch (err ) {
       console.log(err);
     }
@@ -47,18 +63,22 @@ export default function App() {
           horizontal 
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.weather}>
-          <View style={styles.day}>
-            <Text style={styles.temp}>27</Text>
-            <Text style={styles.description}>Sunny</Text>
-          </View>
-          <View style={styles.day}>
-            <Text style={styles.temp}>27</Text>
-            <Text style={styles.description}>Sunny</Text>
-          </View>
-          <View style={styles.day}>
-            <Text style={styles.temp}>27</Text>
-            <Text style={styles.description}>Sunny</Text>
-          </View>
+            {days.length === 0 
+              ? (<View style={{...styles.day, alignItems : 'center'}}>
+                  <ActivityIndicator size="large"/>
+                </View>)
+              : days.map((el, idx) => {
+                return (
+                  <View style={styles.day} key={idx}>
+                    <View style={styles.tempContainer}>
+                      <Text style={styles.temp}>{el.main.temp.toFixed(1)}</Text>
+                      <Fontisto name={icons[el.weather[0].main]} style={styles.icon} size={64} color="black" />
+                    </View>
+                    <Text style={styles.description}>{el.weather[0].main}</Text>
+                  </View>
+                );
+              }
+            )}
         </ScrollView>
       </View>
   );
@@ -83,15 +103,24 @@ const styles = StyleSheet.create({
   },
   day : {
     width : deviceWidth,
+    marginLeft : 2,
+  },
+  tempContainer : {
+    width: '100%',
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-start'
   },
   temp : {
-    fontSize: 120,
+    fontSize: 90,
     fontWeight: 600,
-    marginTop : 50,
+  },
+  icon : {
+    marginLeft: 10,
   },
   description: {
-    fontSize: 30,
+    fontSize: 22,
     marginTop: -10,
+    marginLeft: 10,
   },
 });

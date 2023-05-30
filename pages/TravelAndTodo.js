@@ -89,14 +89,12 @@ export default function TravelAndTodo() {
       ...todos,
       [key] : {
         ...todos[key],
-        done : true,
+        done : !todos[key].done,
       },
     }
 
     setTodos(changeDone);
     await saveTodos(changeDone);
-
-    console.log(changeDone);
   }
 
   return (

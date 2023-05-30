@@ -6,9 +6,10 @@ import { StyleSheet, View, Text,
 import { theme } from '../utils/colors';
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, Octicons } from '@expo/vector-icons';
 
 const STORAGE_KEY = '@todos';
+const btnSize = 17;
 
 export default function TravelAndTodo() {
   const [working, setWorking] = useState(true);
@@ -73,12 +74,29 @@ export default function TravelAndTodo() {
       ...todos,
       [Date.now()] : {
         text,
-        working }
+        working,
+        done : false, 
+      }
     };
 
     setTodos(newTodos);
     await saveTodos(newTodos);
     setText('');
+  }
+
+  const doneTodo = async (key) => {
+    const changeDone = {
+      ...todos,
+      [key] : {
+        ...todos[key],
+        done : true,
+      },
+    }
+
+    setTodos(changeDone);
+    await saveTodos(changeDone);
+
+    console.log(changeDone);
   }
 
   return (
@@ -113,17 +131,32 @@ export default function TravelAndTodo() {
             todos[el].working === working ?
               <View 
                 key={el}
-                style={styles.todo} 
+                style={{
+                  ...styles.todo,
+                  backgroundColor : todos[el].done ? theme.doneBg : theme.todoBg,
+                }} 
               >
                 <Text style={styles.todoText}>
                   {todos[el].text}
                 </Text>
-                <TouchableOpacity    
-                  onPress={() => removeTodos(el, todos[el])}
-                  activeOpacity={0.6}
-                >
-                  <AntDesign name="delete" size={18} color="white" />
-                </TouchableOpacity>
+                <View style={styles.btns}>
+                  <TouchableOpacity 
+                    onPress={() => doneTodo(el)}
+                    activeOpacity={0.6}
+                  >
+                    <AntDesign name="checkcircleo" size={btnSize} color={theme.doneBtn} />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    activeOpacity={0.6}>
+                    <Octicons name="pencil" size={btnSize} color="white" />
+                  </TouchableOpacity>
+                  <TouchableOpacity    
+                    onPress={() => removeTodos(el)}
+                    activeOpacity={0.6}
+                  >
+                    <AntDesign name="delete" size={btnSize} color="white" />
+                  </TouchableOpacity>
+                </View>
               </View>
             : null
           );
@@ -161,15 +194,20 @@ const styles = StyleSheet.create({
     flexDirection:'row',
     alignItems: 'center',
     justifyContent:'space-between',
-    backgroundColor : theme.todoBg,
     marginBottom: 15,
     paddingVertical : 15,
     paddingHorizontal: 18,
     borderRadius : 15,
   },
   todoText : {
+    flex : 4,
     color: 'white',
     fontSize : 18,
     fontWeight: 400,
   },
+  btns : {
+    flexDirection : 'row',
+    flex : 1,
+    justifyContent : 'space-between',
+  }
 });

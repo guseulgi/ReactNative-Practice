@@ -3,6 +3,7 @@ import { StyleSheet, View, Text,
   TouchableOpacity, TextInput, ScrollView, Pressable,
   Alert, ActivityIndicator,
 } from 'react-native';
+import prompt from 'react-native-prompt-android';
 import { theme } from '../utils/colors';
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -86,8 +87,10 @@ export default function TravelAndTodo() {
   const loadTodos = async () => {
     try {
       const result = await AsyncStorage.getItem(STORAGE_KEY);
-      const data = JSON.parse(result);
-      data !== null ? setTodos(data) : null;
+      if (result) {
+        const data = JSON.parse(result);
+        data !== null ? setTodos(data) : null;
+      }
     } catch (err) {
       throw err;
     }
@@ -125,14 +128,14 @@ export default function TravelAndTodo() {
 
   const modifyTodoBtn = async (key) => {
     try {
-      Alert.prompt('수정 안내', '수정하실 내용을 입력해주세요.', [
+      prompt('수정 안내', '수정하실 내용을 입력해주세요.', [
         {
           text : '취소',
           style: 'cancel'
         },
         {
           text: '수정',
-          style:'destructive',
+          // style:'destructive',
           onPress: async (txt) => {
             const modifyingTodo = {
               ...todos,
@@ -146,7 +149,10 @@ export default function TravelAndTodo() {
             await saveTodos(modifyingTodo);
           }
         }
-      ]);
+      ],
+      {
+        cancelable : true,
+      });
     } catch(err) {
       throw err;
     }

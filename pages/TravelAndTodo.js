@@ -9,18 +9,26 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AntDesign, Octicons } from '@expo/vector-icons';
 
 const STORAGE_KEY = '@todos';
-const btnSize = 17;
+const TAB_KEY = '@tabs';
+const btnSize = 22;
 
 export default function TravelAndTodo() {
   const [working, setWorking] = useState(true);
   const [text, setText] = useState('');
   const [todos, setTodos] = useState({});
 
-  const travel = () => setWorking(false);
-  const work = () => setWorking(true);
+  const travel = () => {
+    setWorking(false);
+    saveTabs(false);
+  };
+  const work = () => {
+    setWorking(true);
+    saveTabs(true);
+  };
 
   useEffect(() => {
     loadTodos();
+    loadTabs();
   }, []);
 
   const onChangeText = (payload) => {
@@ -56,6 +64,24 @@ export default function TravelAndTodo() {
       throw err;
     }
   }
+
+  const saveTabs = async () => {
+    try {
+      const result = JSON.stringify(working);
+      await AsyncStorage.setItem(TAB_KEY, result);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  const loadTabs = async () => {
+    try {
+      const result = await AsyncStorage.getItem(TAB_KEY);
+      result !== null ? setWorking(JSON.parse(result)) : null;
+    } catch (err) {
+
+    }
+  }
   
   const loadTodos = async () => {
     try {
@@ -75,7 +101,7 @@ export default function TravelAndTodo() {
       [Date.now()] : {
         text,
         working,
-        done : false, 
+        done : false,
       }
     };
 
@@ -97,6 +123,35 @@ export default function TravelAndTodo() {
     await saveTodos(changeDone);
   }
 
+  const modifyTodoBtn = async (key) => {
+    try {
+      Alert.prompt('수정 안내', '수정하실 내용을 입력해주세요.', [
+        {
+          text : '취소',
+          style: 'cancel'
+        },
+        {
+          text: '수정',
+          style:'destructive',
+          onPress: async (txt) => {
+            const modifyingTodo = {
+              ...todos,
+              [key] : {
+                ...todos[key],
+                text : txt,
+              }
+            }
+
+            setTodos(modifyingTodo);
+            await saveTodos(modifyingTodo);
+          }
+        }
+      ]);
+    } catch(err) {
+      throw err;
+    }
+  }
+
   return (
     <View style={styles.container}>
       <StatusBar style='light' />
@@ -115,7 +170,7 @@ export default function TravelAndTodo() {
       <TextInput style={styles.input}
         placeholder={working ? 'Add a To do' : 'Where do you want to go?'}
         value={text}
-        returnKeyType='done'
+        returnKeyType='send'
         onSubmitEditing={addTodo} 
         onChangeText={onChangeText}
       />
@@ -139,16 +194,22 @@ export default function TravelAndTodo() {
                 </Text>
                 <View style={styles.btns}>
                   <TouchableOpacity 
+                    style={styles.btn}
                     onPress={() => doneTodo(el)}
                     activeOpacity={0.6}
                   >
-                    <AntDesign name="checkcircleo" size={btnSize} color={theme.doneBtn} />
+                    <AntDesign name="checkcircleo" size={btnSize} 
+                      color={todos[el].done ? theme.notDoneBtn : theme.doneBtn} />
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    activeOpacity={0.6}>
+                  {todos[el].done ? null 
+                    : <TouchableOpacity
+                      style={styles.btn}
+                      onPress={() => modifyTodoBtn(el)}
+                      activeOpacity={0.6}>
                     <Octicons name="pencil" size={btnSize} color="white" />
-                  </TouchableOpacity>
-                  <TouchableOpacity    
+                  </TouchableOpacity>}
+                  <TouchableOpacity
+                    style={styles.btn} 
                     onPress={() => removeTodos(el)}
                     activeOpacity={0.6}
                   >
@@ -173,7 +234,7 @@ const styles = StyleSheet.create({
   header : {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 70,
+    marginTop: 100,
   },
   btnText : {
     fontSize : 38,
@@ -181,10 +242,10 @@ const styles = StyleSheet.create({
   },
   input : {
     backgroundColor : '#fff',
-    paddingVertical : 10,
+    paddingVertical : 15,
     paddingHorizontal : 20,
     borderRadius : 30,
-    marginTop : 20,
+    marginTop : 45,
     fontSize : 18,
     marginVertical: 40,
   },
@@ -192,20 +253,25 @@ const styles = StyleSheet.create({
     flexDirection:'row',
     alignItems: 'center',
     justifyContent:'space-between',
+    flex : 1,
     marginBottom: 15,
     paddingVertical : 15,
     paddingHorizontal: 18,
     borderRadius : 15,
   },
   todoText : {
-    flex : 4,
+    flex : 8,
     color: 'white',
     fontSize : 18,
     fontWeight: 400,
+    marginRight: 10,
   },
   btns : {
     flexDirection : 'row',
-    flex : 1,
-    justifyContent : 'space-between',
+    flex : 3,
+    justifyContent : 'flex-end',
+  },
+  btn : {
+    marginLeft: 10,
   }
 });

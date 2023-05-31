@@ -4,4 +4,5 @@ export const theme = {
   todoBg : '#5C5C60',
   doneBg : '#333336',
   doneBtn : '#95ff63',
+  notDoneBtn : '#ff6363',
 }

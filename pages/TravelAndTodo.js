@@ -9,8 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AntDesign, Octicons } from '@expo/vector-icons';
 
 const STORAGE_KEY = '@todos';
-const TAB_KEY = '@tabs';
-const btnSize = 22;
+const btnSize = 17;
 
 export default function TravelAndTodo() {
   const [working, setWorking] = useState(true);
@@ -28,7 +27,6 @@ export default function TravelAndTodo() {
 
   useEffect(() => {
     loadTodos();
-    loadTabs();
   }, []);
 
   const onChangeText = (payload) => {
@@ -64,24 +62,6 @@ export default function TravelAndTodo() {
       throw err;
     }
   }
-
-  const saveTabs = async () => {
-    try {
-      const result = JSON.stringify(working);
-      await AsyncStorage.setItem(TAB_KEY, result);
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  const loadTabs = async () => {
-    try {
-      const result = await AsyncStorage.getItem(TAB_KEY);
-      result !== null ? setWorking(JSON.parse(result)) : null;
-    } catch (err) {
-
-    }
-  }
   
   const loadTodos = async () => {
     try {
@@ -103,7 +83,7 @@ export default function TravelAndTodo() {
       [Date.now()] : {
         text,
         working,
-        done : false,
+        done : false, 
       }
     };
 
@@ -148,10 +128,7 @@ export default function TravelAndTodo() {
             await saveTodos(modifyingTodo);
           }
         }
-      ],
-      {
-        cancelable : true,
-      });
+      ]);
     } catch(err) {
       throw err;
     }
@@ -175,7 +152,7 @@ export default function TravelAndTodo() {
       <TextInput style={styles.input}
         placeholder={working ? 'Add a To do' : 'Where do you want to go?'}
         value={text}
-        returnKeyType='send'
+        returnKeyType='done'
         onSubmitEditing={addTodo} 
         onChangeText={onChangeText}
       />
@@ -199,22 +176,17 @@ export default function TravelAndTodo() {
                 </Text>
                 <View style={styles.btns}>
                   <TouchableOpacity 
-                    style={styles.btn}
                     onPress={() => doneTodo(el)}
                     activeOpacity={0.6}
                   >
-                    <AntDesign name="checkcircleo" size={btnSize} 
-                      color={todos[el].done ? theme.notDoneBtn : theme.doneBtn} />
+                    <AntDesign name="checkcircleo" size={btnSize} color={theme.doneBtn} />
                   </TouchableOpacity>
-                  {todos[el].done ? null 
-                    : <TouchableOpacity
-                      style={styles.btn}
-                      onPress={() => modifyTodoBtn(el)}
-                      activeOpacity={0.6}>
-                    <Octicons name="pencil" size={btnSize} color="white" />
-                  </TouchableOpacity>}
                   <TouchableOpacity
-                    style={styles.btn} 
+                    onPress={() => modifyTodoBtn(el)}
+                    activeOpacity={0.6}>
+                    <Octicons name="pencil" size={btnSize} color="white" />
+                  </TouchableOpacity>
+                  <TouchableOpacity    
                     onPress={() => removeTodos(el)}
                     activeOpacity={0.6}
                   >
@@ -239,7 +211,7 @@ const styles = StyleSheet.create({
   header : {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 100,
+    marginTop: 70,
   },
   btnText : {
     fontSize : 38,
@@ -247,10 +219,10 @@ const styles = StyleSheet.create({
   },
   input : {
     backgroundColor : '#fff',
-    paddingVertical : 15,
+    paddingVertical : 10,
     paddingHorizontal : 20,
     borderRadius : 30,
-    marginTop : 45,
+    marginTop : 20,
     fontSize : 18,
     marginVertical: 40,
   },
@@ -258,25 +230,20 @@ const styles = StyleSheet.create({
     flexDirection:'row',
     alignItems: 'center',
     justifyContent:'space-between',
-    flex : 1,
     marginBottom: 15,
     paddingVertical : 15,
     paddingHorizontal: 18,
     borderRadius : 15,
   },
   todoText : {
-    flex : 8,
+    flex : 4,
     color: 'white',
     fontSize : 18,
     fontWeight: 400,
-    marginRight: 10,
   },
   btns : {
     flexDirection : 'row',
-    flex : 3,
-    justifyContent : 'flex-end',
-  },
-  btn : {
-    marginLeft: 10,
+    flex : 1,
+    justifyContent : 'space-between',
   }
 });

@@ -3,7 +3,6 @@ import { StyleSheet, View, Text,
   TouchableOpacity, TextInput, ScrollView, Pressable,
   Alert, ActivityIndicator,
 } from 'react-native';
-import prompt from 'react-native-prompt-android';
 import { theme } from '../utils/colors';
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -128,14 +127,14 @@ export default function TravelAndTodo() {
 
   const modifyTodoBtn = async (key) => {
     try {
-      prompt('수정 안내', '수정하실 내용을 입력해주세요.', [
+      Alert.prompt('수정 안내', '수정하실 내용을 입력해주세요.', [
         {
           text : '취소',
           style: 'cancel'
         },
         {
           text: '수정',
-          // style:'destructive',
+          style:'destructive',
           onPress: async (txt) => {
             const modifyingTodo = {
               ...todos,

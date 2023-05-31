@@ -9,10 +9,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AntDesign, Octicons } from '@expo/vector-icons';
 
 const STORAGE_KEY = '@todos';
-const btnSize = 17;
+const TAB_KEY = '@tabs';
+const btnSize = 22;
 
 export default function TravelAndTodo() {
-  const [working, setWorking] = useState(true);
+  const [working, setWorking] = useState();
   const [text, setText] = useState('');
   const [todos, setTodos] = useState({});
 
@@ -26,8 +27,27 @@ export default function TravelAndTodo() {
   };
 
   useEffect(() => {
+    loadTabs();
     loadTodos();
   }, []);
+
+  const saveTabs = async () => {
+    try {
+      const result = JSON.stringify(working);
+      await AsyncStorage.setItem(TAB_KEY, result);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  const loadTabs = async () => {
+    try {
+      const result = await AsyncStorage.getItem(TAB_KEY);
+      result !== null ? setWorking(JSON.parse(result)) : null;
+    } catch (err) {
+      throw err;
+    }
+  }
 
   const onChangeText = (payload) => {
     setText(payload);
@@ -86,6 +106,7 @@ export default function TravelAndTodo() {
         done : false, 
       }
     };
+    console.log(newTodos);
 
     setTodos(newTodos);
     await saveTodos(newTodos);
@@ -176,17 +197,21 @@ export default function TravelAndTodo() {
                 </Text>
                 <View style={styles.btns}>
                   <TouchableOpacity 
+                    style={styles.btn}
                     onPress={() => doneTodo(el)}
                     activeOpacity={0.6}
                   >
-                    <AntDesign name="checkcircleo" size={btnSize} color={theme.doneBtn} />
+                    <AntDesign name="checkcircleo" size={btnSize} color={todos[el].done ? theme.notDoneBtn : theme.doneBtn} />
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => modifyTodoBtn(el)}
-                    activeOpacity={0.6}>
+                  {todos[el].done ? null 
+                  : <TouchableOpacity
+                      style={styles.btn}
+                      onPress={() => modifyTodoBtn(el)}
+                      activeOpacity={0.6}>
                     <Octicons name="pencil" size={btnSize} color="white" />
-                  </TouchableOpacity>
-                  <TouchableOpacity    
+                  </TouchableOpacity>}
+                  <TouchableOpacity
+                    style={styles.btn}  
                     onPress={() => removeTodos(el)}
                     activeOpacity={0.6}
                   >
@@ -236,14 +261,17 @@ const styles = StyleSheet.create({
     borderRadius : 15,
   },
   todoText : {
-    flex : 4,
+    flex : 7,
     color: 'white',
     fontSize : 18,
     fontWeight: 400,
   },
   btns : {
     flexDirection : 'row',
-    flex : 1,
-    justifyContent : 'space-between',
+    flex : 3,
+    justifyContent : 'flex-end',
+  },
+  btn: {
+    marginLeft: 15,
   }
 });

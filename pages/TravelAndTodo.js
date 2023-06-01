@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { StyleSheet, View, Text,
   TouchableOpacity, TextInput, ScrollView, Pressable,
-  Alert, ActivityIndicator,
+  Alert, ActivityIndicator,Platform
 } from 'react-native';
 import { theme } from '../utils/colors';
 import { StatusBar } from 'expo-status-bar';
@@ -25,11 +25,6 @@ export default function TravelAndTodo() {
     setWorking(true);
     saveTabs(true);
   };
-
-  useEffect(() => {
-    loadTabs();
-    loadTodos();
-  }, []);
 
   const saveTabs = async () => {
     try {
@@ -61,28 +56,6 @@ export default function TravelAndTodo() {
     }
   }
 
-  const removeTodos = async (key) => {
-    try {
-      Alert.alert('✔️ 안내', `정말로 '${todos[key].text}' 내용을 삭제하시겠습니까?`, [
-        {
-          text: '취소',
-          style: 'cancel',
-        },
-        { 
-          text: '삭제', 
-          onPress: async () => {
-            Reflect.deleteProperty(todos, key);
-            await saveTodos(todos);
-            loadTodos();
-          },
-          style: 'destructive'
-        }
-      ]);
-    } catch(err) {
-      throw err;
-    }
-  }
-  
   const loadTodos = async () => {
     try {
       const result = await AsyncStorage.getItem(STORAGE_KEY);
@@ -92,6 +65,40 @@ export default function TravelAndTodo() {
       }
     } catch (err) {
       throw err;
+    }
+  }
+
+  const removeTodos = async (key) => {
+    if(Platform.OS ==='web') {
+      // Web
+      const ok = confirm(`정말로 '${todos[key].text}' 내용을 삭제하시겠습니까?`);
+
+      if(ok) {
+        Reflect.deleteProperty(todos, key);
+        await saveTodos(todos);
+        loadTodos();
+      }
+    } else {
+      // App
+      try {
+        Alert.alert('✔️ 안내', `정말로 '${todos[key].text}' 내용을 삭제하시겠습니까?`, [
+          {
+            text: '취소',
+            style: 'cancel',
+          },
+          { 
+            text: '삭제', 
+            onPress: async () => {
+              Reflect.deleteProperty(todos, key);
+              await saveTodos(todos);
+              loadTodos();
+            },
+            style: 'destructive'
+          }
+        ]);
+      } catch(err) {
+        throw err;
+      }
     }
   }
 
@@ -154,6 +161,11 @@ export default function TravelAndTodo() {
       throw err;
     }
   }
+
+  useEffect(() => {
+    loadTabs();
+    loadTodos();
+  }, []);
 
   return (
     <View style={styles.container}>

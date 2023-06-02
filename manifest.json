@@ -1,0 +1,21 @@
+{
+  "background_color": "#D3AF75",
+  "display": "standalone",
+  "lang": "en",
+  "name": "NomadWeather",
+  "short_name": "NomadWeather",
+  "start_url": "/?utm_source=web_app_manifest",
+  "orientation": "portrait",
+  "related_applications": [
+    {
+      "platform": "itunes",
+      "id": "com.todo.travel"
+    },
+    {
+      "platform": "play",
+      "url": "http://play.google.com/store/apps/details?id=com.todo.travel",
+      "id": "com.todo.travel"
+    }
+  ],
+  "prefer_related_applications": true
+}
